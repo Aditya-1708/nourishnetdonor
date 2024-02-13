@@ -4,7 +4,7 @@ import 'package:nourishnetdonor/repository/Authentication_Repository/authenticat
 
 class ContinueController extends GetxController {
   static ContinueController get instance => Get.find();
-  void continueGoole() {
+  void continueGoogle() {
     AuthenticationRepository.instance.continueWithGoogle();
   }
 }

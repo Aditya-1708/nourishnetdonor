@@ -1,119 +1,141 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:nourishnetdonor/widgets/app_bar.dart';
 import 'package:nourishnetdonor/widgets/bottom-navbar.dart';
+import 'package:get/get.dart';
+import 'package:nourishnetdonor/features/donate/models/donation_Model.dart';
+import 'package:nourishnetdonor/repository/Donation_Repository/donation_repository.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
 
-class PostPage extends StatefulWidget {
-  const PostPage({Key? key}) : super(key: key);
+class DonatePage extends StatefulWidget {
+  const DonatePage({Key? key}) : super(key: key);
 
   @override
-  State<PostPage> createState() => _PostPageState();
+  State<DonatePage> createState() => _DonatePageState();
 }
 
-class _PostPageState extends State<PostPage> {
-  int currentPage = 2;
-
+class _DonatePageState extends State<DonatePage> {
+  int currentPage = 1;
   final _formKey = GlobalKey<FormState>();
-  late String _title;
-  late String _description;
-  String imageUrl='';
+  final DonationRepository _donationRepository = DonationRepository();
+  late String _amountOfFood;
+  late String _timings;
+  late String _location;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 255, 255, 236),
-      appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 198, 168, 105),
-        title: Text(
-          'NourishNet',
-          style: TextStyle(
-            fontSize: 35,
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+      backgroundColor:
+          Color.fromARGB(255, 255, 255, 236), // Same background color
+      appBar: CustomAppBar(), // Reusable app bar
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: 'Title',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a title';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _title = value!;
-                },
-              ),
-              SizedBox(height: 20),
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: 'Description',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a description';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _description = value!;
-                },
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  ImagePicker imagePicker = ImagePicker();
-                  XFile? file =
-                      await imagePicker.pickImage(source: ImageSource.gallery);
-                  print('${file?.path}');
-                  if (file == null) return;
-                  String uniqueFileName =
-                      DateTime.now().millisecondsSinceEpoch.toString();
-                  Reference referenceRoot = FirebaseStorage.instance.ref();
-                  Reference referenceDirImage = referenceRoot.child('Images');
-                  Reference referenceImageToUpload =
-                      referenceDirImage.child(uniqueFileName);
-                  try {
-                    await referenceImageToUpload.putFile(File(file!.path));
-                    imageUrl = await referenceImageToUpload.getDownloadURL();
-                  } catch (error) {}
-                },
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.add, color: Colors.blue),
-                    SizedBox(width: 8),
-                    Text('Add', style: TextStyle(color: Colors.blue)),
-                  ],
-                ),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    // You can use _title and _description here
-                  }
-                },
-                child: Text('Post'),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 0,
+                blurRadius: 0,
+                offset: Offset(0, 0),
               ),
             ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  SizedBox(height: 10),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      labelText: 'Food Servings',
+                      prefixIcon: Icon(Icons.food_bank),
+                    ),
+                    style: TextStyle(fontSize: 16),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter the amount of food';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _amountOfFood = value!;
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      labelText: 'Timings',
+                      prefixIcon: Icon(Icons.access_time),
+                    ),
+                    style: TextStyle(fontSize: 16),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter the timings';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _timings = value!;
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      labelText: 'Location',
+                      prefixIcon: Icon(Icons.location_on),
+                    ),
+                    style: TextStyle(fontSize: 16),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter the location';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _location = value!;
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          _formKey.currentState!.save();
+                          DonationModel donation = DonationModel(
+                            foodServings: _amountOfFood,
+                            timings: _timings,
+                            location: _location,
+                          );
+                          _donationRepository.CreateDonation(donation);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.orange,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 40,
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                      ),
+                      child: Text(
+                        'Donate',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
